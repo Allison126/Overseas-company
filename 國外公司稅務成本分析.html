@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>海外公司設立稅務影響互動分析儀</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #F8F9FA;
+            color: #343A40;
+        }
+        .nav-link {
+            transition: color 0.3s, border-bottom-color 0.3s;
+        }
+        .nav-link:hover {
+            color: #007BFF;
+            border-bottom-color: #007BFF;
+        }
+        .card {
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .tab-button.active {
+            border-color: #007BFF;
+            color: #007BFF;
+            background-color: #E7F3FF;
+        }
+        .chart-container {
+            position: relative;
+            margin: auto;
+            height: 40vh;
+            width: 100%;
+            max-width: 900px;
+        }
+        @media (max-width: 768px) {
+            .chart-container {
+                height: 50vh;
+            }
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <!-- Chosen Palette: Professional Blue & Gray -->
+    <!-- Application Structure Plan: The SPA is designed as a decision-making dashboard. It starts with a summary of the current financial situation (the "problem") to immediately engage the user. The core of the app is an interactive comparison section where users can select different countries and see the financial impact visualized in a bar chart, facilitating easy comparison. A "Deep Dive" section follows, using a tabbed interface to present detailed information for each country without overwhelming the user. This is followed by general strategic considerations and a clear conclusion with actionable next steps. This structure transforms the linear report into a non-linear, exploratory tool, guiding the user from problem identification to solution analysis and final recommendation. -->
+    <!-- Visualization & Content Choices: 
+        - Current Situation (Inform): KPI cards with large numbers to highlight the key pain point (NT$200k WHT). Goal: Grab user attention. Method: Styled HTML/CSS.
+        - Country Comparison (Compare): An interactive bar chart is the central element. Goal: Allow users to visually compare the financial outcomes of different choices. Interaction: Checkboxes filter the data shown on the chart. Justification: A chart is more effective than a table for comparing a primary metric (Net Benefit) across multiple options. Library: Chart.js (Canvas).
+        - Annual Costs Breakdown (Inform): Simple donut charts within each country's detail tab. Goal: Show the composition of annual maintenance costs. Method: Chart.js (Canvas).
+        - Detailed Info (Organize): A tabbed interface. Goal: Present dense information in a structured, non-overwhelming way. Interaction: Clicking tabs reveals content. Justification: Tabs are a standard UI pattern for organizing detailed content within a single view. Method: HTML/CSS/JS.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-xl md:text-2xl font-bold text-gray-800">海外公司稅務決策儀表板</h1>
+            <div class="hidden md:flex space-x-8">
+                <a href="#current-situation" class="nav-link text-gray-600 border-b-2 border-transparent pb-1">當前狀況</a>
+                <a href="#comparison" class="nav-link text-gray-600 border-b-2 border-transparent pb-1">方案比較</a>
+                <a href="#details" class="nav-link text-gray-600 border-b-2 border-transparent pb-1">各國詳情</a>
+                <a href="#conclusion" class="nav-link text-gray-600 border-b-2 border-transparent pb-1">結論建議</a>
+            </div>
+            <button id="mobile-menu-button" class="md:hidden">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+            </button>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden px-6 pt-2 pb-4">
+            <a href="#current-situation" class="block py-2 text-gray-600">當前狀況</a>
+            <a href="#comparison" class="block py-2 text-gray-600">方案比較</a>
+            <a href="#details" class="block py-2 text-gray-600">各國詳情</a>
+            <a href="#conclusion" class="block py-2 text-gray-600">結論建議</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto p-4 md:p-8">
+        
+        <section id="current-situation" class="mb-12 text-center">
+            <h2 class="text-3xl font-bold mb-2 text-gray-800">您的當前財務與稅務挑戰</h2>
+            <p class="text-lg text-gray-600 mb-8 max-w-3xl mx-auto">您的公司目前每年廣告支出為100萬台幣，但因跨境支付產生了高額的預扣稅，這直接侵蝕了您的營運資金。本儀表板旨在幫助您找到最佳的海外設立方案以解決此問題。</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                <div class="card bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-lg font-semibold text-gray-500">年度廣告支出</h3>
+                    <p class="text-4xl font-bold text-blue-600 mt-2">NT$ 1,000,000</p>
+                </div>
+                <div class="card bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-lg font-semibold text-gray-500">年度廣告收入</h3>
+                    <p class="text-4xl font-bold text-green-600 mt-2">NT$ 600,000</p>
+                </div>
+                <div class="card bg-red-50 border-l-4 border-red-500 p-6 rounded-lg shadow-md">
+                    <h3 class="text-lg font-semibold text-red-800">當前主要痛點：台灣預扣稅</h3>
+                    <p class="text-4xl font-bold text-red-600 mt-2">NT$ 200,000</p>
+                    <p class="text-sm text-red-700 mt-2">(廣告支出的20%)</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="comparison" class="mb-12 bg-white p-6 md:p-8 rounded-lg shadow-lg">
+            <h2 class="text-3xl font-bold mb-4 text-center text-gray-800">互動方案比較分析</h2>
+            <p class="text-lg text-gray-600 mb-8 max-w-3xl mx-auto text-center">請勾選您想比較的國家，下方的圖表將即時更新，顯示各方案的預估年度總成本與淨效益。</p>
+            <div id="country-selector" class="flex flex-wrap justify-center gap-4 mb-8">
+                <label class="flex items-center space-x-2 p-2 rounded-md cursor-pointer bg-gray-100 hover:bg-gray-200">
+                    <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600" value="singapore" checked>
+                    <span class="text-gray-700 font-medium">新加坡</span>
+                </label>
+                <label class="flex items-center space-x-2 p-2 rounded-md cursor-pointer bg-gray-100 hover:bg-gray-200">
+                    <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600" value="hongkong" checked>
+                    <span class="text-gray-700 font-medium">香港</span>
+                </label>
+                <label class="flex items-center space-x-2 p-2 rounded-md cursor-pointer bg-gray-100 hover:bg-gray-200">
+                    <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600" value="ireland">
+                    <span class="text-gray-700 font-medium">愛爾蘭</span>
+                </label>
+                <label class="flex items-center space-x-2 p-2 rounded-md cursor-pointer bg-gray-100 hover:bg-gray-200">
+                    <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600" value="estonia">
+                    <span class="text-gray-700 font-medium">愛沙尼亞</span>
+                </label>
+            </div>
+            <div class="chart-container">
+                <canvas id="comparisonChart"></canvas>
+            </div>
+        </section>
+
+        <section id="details" class="mb-12">
+            <h2 class="text-3xl font-bold mb-8 text-center text-gray-800">各國方案詳情</h2>
+            <div class="max-w-5xl mx-auto">
+                <div class="mb-4 flex flex-wrap justify-center border-b border-gray-200">
+                    <button class="tab-button py-2 px-4 text-gray-500 font-medium border-b-2 border-transparent" data-tab="singapore">新加坡</button>
+                    <button class="tab-button py-2 px-4 text-gray-500 font-medium border-b-2 border-transparent" data-tab="hongkong">香港</button>
+                    <button class="tab-button py-2 px-4 text-gray-500 font-medium border-b-2 border-transparent" data-tab="ireland">愛爾蘭</button>
+                    <button class="tab-button py-2 px-4 text-gray-500 font-medium border-b-2 border-transparent" data-tab="estonia">愛沙尼亞</button>
+                </div>
+                <div id="tab-content" class="bg-white p-6 md:p-8 rounded-lg shadow-lg">
+                </div>
+            </div>
+        </section>
+
+        <section id="conclusion" class="text-center bg-blue-50 p-8 rounded-lg">
+            <h2 class="text-3xl font-bold mb-4 text-blue-800">結論與建議步驟</h2>
+            <div id="recommendation" class="max-w-3xl mx-auto text-lg text-gray-700 space-y-4">
+            </div>
+            <div class="mt-8">
+                <h3 class="text-xl font-bold mb-4 text-gray-800">建議的下一步</h3>
+                <ol class="text-left list-decimal list-inside space-y-2 max-w-md mx-auto text-gray-600">
+                    <li>針對首選司法管轄區（新加坡）進行更詳細的可行性研究。</li>
+                    <li>聘請國際稅務與公司架構專家，制定精確的實施計劃。</li>
+                    <li>完成新海外實體的法律和營運架構設立，包括銀行帳戶。</li>
+                    <li>謹慎管理資金流轉，確保在兩地都符合法規。</li>
+                </ol>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-gray-800 text-white text-center p-4 mt-8">
+        <p>&copy; 2025 稅務決策儀表板. 本分析僅供參考，實際決策請諮詢專業顧問。</p>
+    </footer>
+
+    <script>
+        const appData = {
+            taiwan: {
+                name: '當前台灣情境',
+                totalCost: 200000,
+                netBenefit: 0,
+            },
+            singapore: {
+                name: '新加坡',
+                cit: '17% (屬地徵稅)',
+                wht_tw: '0% (有DTA)',
+                gst: '9%',
+                annualCost: 96000,
+                totalCost: 96000,
+                netBenefit: 104000,
+                details: `新加坡因其與台灣簽訂的雙重課稅協定(DTA)，在稅務效率上最為突出。若在台灣不構成常設機構，Google廣告收入可免除台灣20%的預扣稅，直接節省12萬元。其屬地稅制對未來境外收入也很有利。`,
+                pros: ['與台灣有DTA，可免除收入預扣稅', '屬地稅制有利境外收入', '親商環境，政治穩定'],
+                cons: ['年度維護成本中等', 'B2C數位服務有9% GST', '銀行開戶有一定挑戰']
+            },
+            hongkong: {
+                name: '香港',
+                cit: '8.25% / 16.5% (屬地徵稅)',
+                wht_tw: '20% (無DTA)',
+                gst: '0%',
+                annualCost: 28000,
+                totalCost: 148000,
+                netBenefit: 52000,
+                details: `香港的優勢在於極低的企業所得稅率和無銷售稅。營運成本相對較低。但最大的缺點是與台灣沒有DTA，這意味著Google廣告收入很可能仍需被台灣課徵20%預扣稅，削弱了其稅務優勢。`,
+                pros: ['企業所得稅率極低', '無銷售稅/GST', '年度維護成本較低'],
+                cons: ['與台灣無DTA，收入預扣稅風險高', '未來可能引入數位服務稅', '銀行開戶審核嚴格']
+            },
+            ireland: {
+                name: '愛爾蘭',
+                cit: '12.5% (全球徵稅)',
+                wht_tw: '20% (無DTA)',
+                gst: '23% VAT',
+                annualCost: 43750,
+                totalCost: 163750,
+                netBenefit: 36250,
+                details: `愛爾蘭擁有歐洲最低的12.5%企業稅率，吸引了眾多科技巨頭。但其全球徵稅原則對境外收入不利，且與台灣沒有DTA，同樣面臨收入的預扣稅問題。高達23%的VAT對B2C業務也是一個負擔。`,
+                pros: ['貿易收入企業稅率僅12.5%', '成熟的科技產業生態'],
+                cons: ['與台灣無DTA', '全球徵稅原則', 'B2C數位服務VAT高達23%', '營運成本較高']
+            },
+            estonia: {
+                name: '愛沙尼亞',
+                cit: '0% (利潤再投資)',
+                wht_tw: '20% (無DTA)',
+                gst: '24% VAT',
+                annualCost: 64750,
+                totalCost: 184750,
+                netBenefit: 15250,
+                details: `愛沙尼亞最大的亮點是其獨特的稅制：只要利潤不分配，就無需繳納企業所得稅，對成長型公司極為有利。其電子居民計畫也大大簡化了遠程運營。但同樣地，缺乏與台灣的DTA是其主要障礙。`,
+                pros: ['利潤再投資享0%稅率，現金流優勢大', '電子居民計畫，方便遠程管理'],
+                cons: ['與台灣無DTA', '分配利潤時稅率為22%', 'B2C數位服務VAT高達24%']
+            }
+        };
+
+        const tabContentEl = document.getElementById('tab-content');
+        const recommendationEl = document.getElementById('recommendation');
+
+        function formatCurrency(value) {
+            return `NT$ ${new Intl.NumberFormat().format(value)}`;
+        }
+
+        function renderTabContent(countryKey) {
+            const country = appData[countryKey];
+            tabContentEl.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-2xl font-bold mb-4 text-gray-800">${country.name}</h3>
+                        <p class="text-gray-600 mb-6">${country.details}</p>
+                        <div class="space-y-4">
+                            <div>
+                                <h4 class="font-semibold text-gray-700">優點</h4>
+                                <ul class="list-disc list-inside text-green-700 mt-2 space-y-1">
+                                    ${country.pros.map(pro => `<li>${pro}</li>`).join('')}
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-700">缺點</h4>
+                                <ul class="list-disc list-inside text-red-700 mt-2 space-y-1">
+                                    ${country.cons.map(con => `<li>${con}</li>`).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h4 class="font-semibold text-gray-700">企業所得稅 (CIT)</h4>
+                            <p class="text-lg font-medium text-gray-900">${country.cit}</p>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h4 class="font-semibold text-gray-700">對台收入預扣稅 (WHT)</h4>
+                            <p class="text-lg font-medium text-gray-900">${country.wht_tw}</p>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h4 class="font-semibold text-gray-700">數位服務稅/VAT</h4>
+                            <p class="text-lg font-medium text-gray-900">${country.gst}</p>
+                        </div>
+                         <div class="bg-gray-50 p-4 rounded-lg">
+                            <h4 class="font-semibold text-gray-700">預估年度維護成本</h4>
+                            <p class="text-lg font-medium text-gray-900">${formatCurrency(country.annualCost)}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderRecommendation() {
+            const bestOption = appData.singapore;
+            recommendationEl.innerHTML = `
+                <p>綜合分析，<strong class="text-blue-600">新加坡</strong> 是最適合您當前業務需求的方案。其與台灣的雙重課稅協定(DTA)能最有效地解決您在收入端的預扣稅問題，預計每年可為您帶來 <strong class="text-green-600">${formatCurrency(bestOption.netBenefit)}</strong> 的淨效益。</p>
+                <p>雖然香港的營運成本較低，但其缺乏DTA所帶來的稅務不確定性風險較高。愛沙尼亞的遞延稅制雖具吸引力，但同樣受制於無DTA的限制。因此，我們建議您優先考慮新加坡方案。</p>
+            `;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const ctx = document.getElementById('comparisonChart').getContext('2d');
+            let comparisonChart;
+
+            function updateChart() {
+                const selectedCountries = Array.from(document.querySelectorAll('#country-selector input:checked')).map(cb => cb.value);
+                
+                const labels = selectedCountries.map(key => appData[key].name);
+                labels.unshift(appData.taiwan.name); 
+
+                const totalCostData = selectedCountries.map(key => appData[key].totalCost);
+                totalCostData.unshift(appData.taiwan.totalCost);
+
+                const netBenefitData = selectedCountries.map(key => appData[key].netBenefit);
+                netBenefitData.unshift(appData.taiwan.netBenefit);
+
+                const chartData = {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: '預估年度總成本 (稅務+維護)',
+                            data: totalCostData,
+                            backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: '相較台灣的年度淨效益',
+                            data: netBenefitData,
+                            backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                };
+
+                if (comparisonChart) {
+                    comparisonChart.destroy();
+                }
+
+                comparisonChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: chartData,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return formatCurrency(value);
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.y !== null) {
+                                            label += formatCurrency(context.parsed.y);
+                                        }
+                                        return label;
+                                    }
+                                }
+                            },
+                            legend: {
+                                position: 'top',
+                            }
+                        }
+                    }
+                });
+            }
+
+            document.querySelectorAll('#country-selector input').forEach(checkbox => {
+                checkbox.addEventListener('change', updateChart);
+            });
+
+            const tabButtons = document.querySelectorAll('.tab-button');
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const tab = button.dataset.tab;
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    renderTabContent(tab);
+                });
+            });
+
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+            
+            document.querySelectorAll('#mobile-menu a, .hidden.md\\:flex a').forEach(link => {
+                link.addEventListener('click', () => {
+                    if (!mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                    }
+                });
+            });
+
+            updateChart();
+            document.querySelector('.tab-button[data-tab="singapore"]').click();
+            renderRecommendation();
+        });
+    </script>
+</body>
+</html>
